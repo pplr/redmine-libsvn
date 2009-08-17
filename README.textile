@@ -1,0 +1,25 @@
+h1. Redmine Libsvn Plugin
+
+This plugin overrides default Redmine Subversion adapter to make it use
+Libsvn instead of calling svn command line client.
+
+h2. Requirements
+
+This plugin requires Libsvn Ruby bindings. On Debian based
+distributions, they are provided by the libsvn-ruby package.
+
+h2. Installation and Setup
+
+Instructions can be found on Redmine online documentation :
+http://www.redmine.org/wiki/redmine/Plugins
+
+h2. Usage
+
+Once the plugin is installed, all subversion repositories are accessed
+through Libsvn bindings. 
+
+h2. Simple benchmark
+
+|_.           |_. user |_. system |_. total |_. real |
+|libsvn       |0.150000 |  0.020000 |  0.170000 |(  0.230447)|
+|svn command  |8.150000 |  0.480000 |  8.750000 |(  8.987669)|
