@@ -100,7 +100,8 @@ module Redmine::Scm::Adapters
     def properties(path, identifier=nil)
       identifier = (identifier and identifier.to_i > 0) ? identifier.to_i : "HEAD"
       properties = {}          
-      ctx.proplist(target(path), identifier) do |path, prop_hash|
+      ctx.proplist(target(path), identifier, identifier, 
+                   Svn::Core::DEPTH_EMPTY) do |path, prop_hash|
         properties.merge!(prop_hash)
       end
       properties
