@@ -147,8 +147,8 @@ module Redmine::Scm::Adapters
         out_file = Tempfile.new("redmine")
         err_file = Tempfile.new("redmine")
         ctx.diff_peg( [], target(URI.escape(path)),
-                      identifier_from,                                       
-                      identifier_to, out_file.path, err_file.path, identifier_from)
+                      identifier_to,                                       
+                      identifier_from, out_file.path, err_file.path, identifier_from)
         out_file.rewind
         diff = []
         out_file.each_line do |line|
