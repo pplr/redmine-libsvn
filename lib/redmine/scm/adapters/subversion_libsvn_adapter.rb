@@ -76,9 +76,9 @@ module Redmine::Scm::Adapters
       path ||= ''
       identifier = (identifier and identifier.to_i > 0) ? identifier.to_i : "HEAD"
       entries = Entries.new
-      ctx.list(target(path), identifier) do |path,dirent,lock,abs_path| 
-        entries.push(Entry.new({:name => path,
-                                 :path => File.join(abs_path,path).gsub(/\A\//,""), 
+      ctx.list(target(path), identifier) do |name,dirent,lock,abs_path| 
+        entries.push(Entry.new({:name => name,
+                                 :path => File.join(path,name).gsub(/\A\//,""), 
                                  :kind => KIND[dirent.kind],
                                  :size => dirent.size,
                                  :lastrev => 
@@ -88,7 +88,7 @@ module Redmine::Scm::Adapters
                                                 :author => 
                                                 dirent.last_author
                                               })
-                               })) unless path.blank?
+                               })) unless name.blank?
         
       end
       logger.debug("Found #{entries.size} entries in the repository for #{target(path)}") if logger && logger.debug?
@@ -112,20 +112,20 @@ module Redmine::Scm::Adapters
       identifier_from = (identifier_from and identifier_from.to_i > 0) ? identifier_from.to_i : "HEAD"
       identifier_to = (identifier_to and identifier_to.to_i > 0) ? identifier_to.to_i : 1
       revisions = Revisions.new
-      
-      ctx.log(target(URI.escape(path)), identifier_from, 
-              identifier_to, options[:limit] || 0,
-              options[:with_paths], 
-              false) do |changed_paths, rev, author, date, message|
+      begin
+        ctx.log(target(path), identifier_from, 
+                identifier_to, options[:limit] || 0,
+                options[:with_paths], 
+                false) do |changed_paths, rev, author, date, message|
         
-        paths = []
-        changed_paths.each do |path, change|
-          paths << {:action => change.action,
-            :path => path,
-            :from_path => change.copyfrom_path,
-            :from_revision => change.copyfrom_rev
-          }
-        end unless changed_paths.nil?
+          paths = []
+          changed_paths.each do |path, change|
+            paths << {:action => change.action,
+              :path => path,
+              :from_path => change.copyfrom_path,
+              :from_revision => change.copyfrom_rev
+            }
+          end unless changed_paths.nil?
         paths.sort! { |x,y| x[:path] <=> y[:path] }
         
         revisions << Revision.new({:identifier => rev,
@@ -134,6 +134,8 @@ module Redmine::Scm::Adapters
                                     :message => message,
                                     :paths => paths
                                   })
+      end
+      rescue Svn::Error::ClientUnrelatedResources
       end
       revisions
     end
@@ -146,7 +148,7 @@ module Redmine::Scm::Adapters
       begin
         out_file = Tempfile.new("redmine")
         err_file = Tempfile.new("redmine")
-        ctx.diff_peg( [], target(URI.escape(path)),
+        ctx.diff_peg( [], target(path),
                       identifier_to,                                       
                       identifier_from, out_file.path, err_file.path, identifier_from)
         out_file.rewind
@@ -163,13 +165,13 @@ module Redmine::Scm::Adapters
     
     def cat(path, identifier=nil)
       identifier = (identifier and identifier.to_i > 0) ? identifier.to_i : "HEAD"
-      ctx.cat(target(URI.escape(path)), identifier, identifier)
+      ctx.cat(target(path), identifier, identifier)
     end
     
     def annotate(path, identifier=nil)
       identifier = (identifier and identifier.to_i > 0) ? identifier.to_i : "HEAD"
       blame = Annotate.new
-      ctx.blame(target(URI.escape(path)), 
+      ctx.blame(target(path), 
                 nil, identifier) do |line_no, revision, author, date, line|
         blame.add_line(line, Revision.new(:identifier => revision.to_i, 
                                           :author => author,
