@@ -36,7 +36,7 @@ module Redmine::Scm::Adapters
     def target(path = '')
       base = path.match(/^\//) ? root_url : url
       # Remove leading slash else libsvn crash
-      File.join(base, path).gsub(/\/\Z/,'')
+      URI.escape(File.join(base, path).gsub(/\/\Z/,''))
     end
     
     def ctx
