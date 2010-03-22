@@ -24,16 +24,17 @@ require 'svn/client'
 
 require_dependency 'repository/subversion'
 
-class Repository::Subversion
+require 'dispatcher'
 
-  def scm_adapter_with_libsvn
-    Redmine::Scm::Adapters::SubversionLibsvnAdapter
+Dispatcher.to_prepare do 
+  Repository::Subversion.class_eval do
+    def scm_adapter_with_libsvn
+      Redmine::Scm::Adapters::SubversionLibsvnAdapter
+    end
+
+    alias_method_chain :scm_adapter, :libsvn
   end
-
-  alias_method_chain :scm_adapter, :libsvn
-
 end
-
 
 Redmine::Plugin.register :libsvn do
   name 'Libsvn'
