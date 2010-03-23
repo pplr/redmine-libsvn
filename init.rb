@@ -45,4 +45,6 @@ Redmine::Plugin.register :libsvn do
   version '0.0.1'
   
   requires_redmine :version_or_higher => '0.8.0'
+
+  settings :default => {'trust_server_cert' => '0'}, :partial => 'settings/lib_svn_settings'
 end
