@@ -128,7 +128,10 @@ module Redmine::Scm::Adapters
           end unless changed_paths.nil?
         paths.sort! { |x,y| x[:path] <=> y[:path] }
         
-        revisions << Revision.new({:identifier => rev,
+          revisions << Revision.new({:identifier => rev.to_s,
+                                      # identifier must be converted
+                                      # to a string as
+                                      # Changeset#revision is a string
                                     :author => author,
                                     :time => date,
                                     :message => message,
