@@ -1,0 +1,6 @@
+<p><label for="settings_trust_server_cert"><%= l(:setting_libsvn_trust_server_cert) %></label>
+<%= hidden_field_tag("settings[trust_server_cert]", 0, :id => nil) %>
+<%= check_box_tag("settings[trust_server_cert]", 1,
+                  @settings['trust_server_cert'].to_i > 0) %></p>
+
+

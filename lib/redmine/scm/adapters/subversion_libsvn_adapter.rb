@@ -36,7 +36,7 @@ module Redmine::Scm::Adapters
     def target(path = '')
       base = path.match(/^\//) ? root_url : url
       # Remove leading slash else libsvn crash
-      File.join(base, path).gsub(/\/\Z/,'')
+      URI.escape(File.join(base, path).gsub(/\/\Z/,''))
     end
     
     def ctx
@@ -48,11 +48,37 @@ module Redmine::Scm::Adapters
           cred.password = @password || ""
           cred.may_save = false
         end
-        @ctx.add_username_prompt_provider(1) do |cred, realm, username, may_save|
+        @ctx.add_username_prompt_provider(1) do |cred, realm, username, 
+                                                 may_save|
           cred.username = @login || ""
           cred.may_save = false
         end
-        
+        @ctx.add_ssl_server_trust_prompt_provider do |cred, realm, failures, 
+                                                      cert_info, may_save|
+          cred.may_save = false
+          if Setting.plugin_libsvn['trust_server_cert'].to_i > 0
+            cred.accepted_failures = failures
+          else
+            errors = []
+            if (failures & Svn::Core::AUTH_SSL_UNKNOWNCA > 0)
+              errors << "the certificate is not issued by a trusted authority"
+            end
+            if (failures & Svn::Core::AUTH_SSL_CNMISMATCH > 0)
+              errors << "the certificate hostname does not match"
+            end
+            if (failures & Svn::Core::AUTH_SSL_NOTYETVALID > 0)
+              errors << "the certificate is not yet valid"
+            end
+            if (failures & Svn::Core::AUTH_SSL_EXPIRED > 0)
+              errors << "the certificate has expired"
+            end
+            if (failures & Svn::Core::AUTH_SSL_OTHER > 0)
+              errors << "the certificate has an unknown error"
+            end
+            raise Redmine::Scm::Adapters::CommandFailed, format("Invalid certificate for '%s': %s.", realm, errors.join(', '))
+          end
+          cred
+        end
       end
       @ctx
     end
