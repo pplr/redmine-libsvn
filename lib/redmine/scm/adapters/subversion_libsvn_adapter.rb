@@ -142,7 +142,7 @@ module Redmine::Scm::Adapters
         ctx.log(target(path), identifier_from, 
                 identifier_to, options[:limit] || 0,
                 options[:with_paths], 
-                false) do |changed_paths, rev, author, date, message|
+                false, identifier_from) do |changed_paths, rev, author, date, message|
         
           paths = []
           changed_paths.each do |path, change|
