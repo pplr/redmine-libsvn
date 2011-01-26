@@ -135,8 +135,8 @@ module Redmine::Scm::Adapters
     
     def revisions(path=nil, identifier_from=nil, identifier_to=nil, options={})
       path ||= ''
-      identifier_from = (identifier_from and identifier_from.to_i > 0) ? identifier_from.to_i : "HEAD"
-      identifier_to = (identifier_to and identifier_to.to_i > 0) ? identifier_to.to_i : 1
+      identifier_from = (identifier_from and identifier_from.to_i >= 0) ? identifier_from.to_i : "HEAD"
+      identifier_to = (identifier_to and identifier_to.to_i >= 0) ? identifier_to.to_i : 0
       revisions = Revisions.new
       begin
         ctx.log(target(path), identifier_from, 
